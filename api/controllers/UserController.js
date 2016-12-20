@@ -26,7 +26,7 @@ module.exports = {
 
           EmailService.sendConfirmationEmail(mailOptions, function(error, info) {
             if(error){
-              res.view('user/error', {message: 'При регистрации пользователя произошла ошибка: ' + error.message});
+              res.view('user/error', {message: 'При отправке письма произошла ошибка: ' + error.message});
             }
             else res.view('user/after_register');
           });
@@ -48,6 +48,9 @@ module.exports = {
                   res.view('user/error',{message: 'При активации пользователя произошла ошибка: ' + error.message});
                 }
                 else{
+                  if (req.session.user)
+                    req.session.user.active = true; 
+
                   res.redirect('/login');
                 }
               });
@@ -61,6 +64,32 @@ module.exports = {
       else{
         res.view();
       }
+    }
+  },
+
+  reactivate: function(req, res) {
+    var user = req.session.user;
+
+    if (user) {
+      if (req.param('reactivate')) {
+        var mailOptions ={
+          from: 'test@cloudmaps.ru' ,
+          to: user.email,
+          subject: 'User Activation Email',
+          text: 'http://localhost:1337/user/register/?id='+user.id+'&t='+user.password
+        };
+
+        EmailService.sendConfirmationEmail(mailOptions, function(error, info) {
+          if (error) {
+            res.view('user/error', {message: 'При отправке письма произошла ошибка: ' + error.message});
+          }
+          else res.view('user/after_register');
+        });
+      } else {
+        res.view('user/reactivate');
+      }
+    } else {
+      res.redirect('/login');
     }
   },
 

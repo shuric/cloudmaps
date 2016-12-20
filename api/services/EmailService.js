@@ -1,3 +1,10 @@
+/**
+ * isActivated
+ *
+ * @module      :: Service
+ * @description :: Сервис отправки Email
+ *
+ */
 module.exports = {
   sendConfirmationEmail: function(options, done) {
     var nodemailer = require('nodemailer');

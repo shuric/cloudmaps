@@ -47,6 +47,6 @@ module.exports.routes = {
   ***************************************************************************/
 
   '/login': {controller: 'UserController', action: 'login'},
-  '/logout': {controller: 'UserController', action: 'logout'}
-
+  '/logout': {controller: 'UserController', action: 'logout'},
+  '/reactivate': {controller: 'UserController', action: 'reactivate'}
 };
