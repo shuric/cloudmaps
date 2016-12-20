@@ -50,5 +50,5 @@ module.exports.policies = {
 	// }
   UserController: {
     profile: 'sessionAuth'
-  } 
+  }
 };
