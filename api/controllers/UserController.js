@@ -49,7 +49,7 @@ module.exports = {
                 }
                 else{
                   if (req.session.user)
-                    req.session.user.active = true; 
+                    req.session.user.active = true;
 
                   res.redirect('/login');
                 }
@@ -102,6 +102,7 @@ module.exports = {
         else{
           if(user.password == crypto.createHash('sha256').update(req.param('password')).digest('hex')){
             req.session.user = user;
+            req.session.authenticated = true;
             return res.redirect('/user/profile/'+user.id);
           }
           else{
