@@ -160,9 +160,24 @@ block scripts
             ],
             max_file_size: "2000kb",
           },
-          resize:{
-            width: 200,
-            height: 200
+          resizes: {
+            thumbnail: {
+              url: '/user/avatar?thumbnail',
+              resize: {
+                width: 60,
+                height: 60,
+                crop: true,
+                enabled: true
+              }
+            },
+            avatar: {
+              url: '/user/avatar',
+              resize: {
+                width: 200,
+                height: 200,
+                enabled: true
+              }
+            }
           }
       });
 
@@ -173,13 +188,34 @@ block scripts
           uploader.start();
         }
       });
+      
+      uploader.bind('BeforeUpload', function(up, file) {
+        if ('thumbnail' in file) {
+          up.settings.url = up.settings.resizes.thumbnail.url;
+          up.settings.resize = up.settings.resizes.thumbnail.resize;
+        } else {
+          up.settings.url = up.settings.resizes.avatar.url;
+          up.settings.resize = up.settings.resizes.avatar.resize;
+        }
+      });
 
       uploader.bind('FileUploaded', function(up, file, result){
-        if(result.status == 200){
-          var src = $('#avatar').attr('src').split('?',1)[0]+ '?_'+ new Date().getTime();
-          $('#avatar').attr('src', src);
+        if (!('thumbnail' in file)) {
+          file.thumbnail = true;
+          file.loaded = 0;
+          file.percent = 0;
+          file.status = plupload.QUEUED;
+          
+          up.trigger("QueueChanged");
+          up.refresh();
+          
+          if (result.status == 200) {
+            var src = $('#avatar').attr('src').split('?',1)[0]+ '?_'+ new Date().getTime();
+            $('#avatar').attr('src', src);
+          }
         }
-        else{
+
+        if (result.status != 200) {
           alert(result.response);
         }
       });

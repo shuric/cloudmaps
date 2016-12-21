@@ -103,7 +103,7 @@ module.exports = {
           if (user && (user.password == crypto.createHash('sha256').update(req.param('password')).digest('hex'))) {
             req.session.user = user;
             req.session.authenticated = true;
-            
+
             return res.redirect('/user/profile/'+user.id);
           }
           else{
@@ -245,8 +245,13 @@ module.exports = {
   avatar: function(req, res){
     var fs = require('fs');
     var avatar_dir = sails.config.rootPath + '/avatars/';
+
+    if (req.query && ('thumbnail' in req.query))
+      avatar_dir += 'thumbnails/';
+
     if(req.method == 'GET'){
       var avatar = avatar_dir + req.param('id') + '.jpg';
+
       fs.stat(avatar, function(error, stats){
         if(error){
           return res.sendfile(avatar_dir + 'default-avatar.jpg');
