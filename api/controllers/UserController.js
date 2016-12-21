@@ -255,14 +255,15 @@ module.exports = {
     }
   },
 
-  avatar: function(req, res){
+  avatar: function(req, res) {
     var fs = require('fs');
     var avatar_dir = sails.config.rootPath + '/avatars/';
 
-    if (req.query && ('thumbnail' in req.query))
+    if ('image' in req.params) {
       avatar_dir += 'thumbnails/';
+    }
 
-    if(req.method == 'GET'){
+    if (req.method == 'GET') {
       var avatar = avatar_dir + req.param('id') + '.jpg';
 
       fs.stat(avatar, function(error, stats){
@@ -277,7 +278,7 @@ module.exports = {
         }
       });
     }
-    else if(req.method == 'POST'){
+    else if(req.method == 'POST') {
       req.file('file').upload({}, function(error, files){
         if(error)
           return res.negotiate(error);

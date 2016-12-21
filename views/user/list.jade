@@ -3,7 +3,7 @@ table.table.table-striped
     - var name = [user.firstname, user.lastname].join(' ')
     tr
       td
-        img(src="/user/avatar/"+ user.id + "?thumbnail", width="60", height="60", alt=name)
+        img(src="/user/avatar/thumbnail/"+ user.id, width="60", height="60", alt=name)
       td.vmiddle= name
       td.vmiddle
         a.request(href="#", data-id=user.id) Добавить в друзья

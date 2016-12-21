@@ -99,7 +99,7 @@ block scripts
 
         });
       };
-      
+
       function get_friends(){
         $.ajax({
           url: '/user/friends/'+my.id,
@@ -126,9 +126,9 @@ block scripts
           url: '/user/list',
           method: 'GET'
         }).done(function(response){
-          
+
           $('#newFriends .modal-body').html(response);
-          
+
           $(".request").on('click', function(e){
             $.ajax({
               url: '/user/request',
@@ -162,7 +162,7 @@ block scripts
           },
           resizes: {
             thumbnail: {
-              url: '/user/avatar?thumbnail',
+              url: '/user/avatar/thumbnail',
               resize: {
                 width: 60,
                 height: 60,
@@ -188,7 +188,7 @@ block scripts
           uploader.start();
         }
       });
-      
+
       uploader.bind('BeforeUpload', function(up, file) {
         if ('thumbnail' in file) {
           up.settings.url = up.settings.resizes.thumbnail.url;
@@ -205,10 +205,10 @@ block scripts
           file.loaded = 0;
           file.percent = 0;
           file.status = plupload.QUEUED;
-          
+
           up.trigger("QueueChanged");
           up.refresh();
-          
+
           if (result.status == 200) {
             var src = $('#avatar').attr('src').split('?',1)[0]+ '?_'+ new Date().getTime();
             $('#avatar').attr('src', src);
@@ -219,7 +219,7 @@ block scripts
           alert(result.response);
         }
       });
-      
+
       io.socket.get('/user/subscribe', function(resData, jwres){
         return;
       });

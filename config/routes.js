@@ -50,5 +50,7 @@ module.exports.routes = {
   '/logout': {controller: 'UserController', action: 'logout'},
   '/reactivate': {controller: 'UserController', action: 'reactivate'},
   'r|^/user/profile/(\\d+)$|id': {controller: 'UserController', action: 'profile'},
-  '/user/profile/:username': {controller: 'UserController', action: 'profile'}
+  '/user/profile/:username': {controller: 'UserController', action: 'profile'},
+  'post r|^/user/avatar/(thumbnail)$|image': {controller: 'UserController', action: 'avatar'},
+  'get r|^/user/avatar/(thumbnail)/(\\d+)$|image,id': {controller: 'UserController', action: 'avatar'},
 };
