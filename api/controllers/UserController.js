@@ -100,9 +100,10 @@ module.exports = {
           res.view('user/error',{message: 'При проверке логина и пароля произошла ошибка: ' + error.message});
         }
         else{
-          if(user.password == crypto.createHash('sha256').update(req.param('password')).digest('hex')){
+          if (user && (user.password == crypto.createHash('sha256').update(req.param('password')).digest('hex'))) {
             req.session.user = user;
             req.session.authenticated = true;
+            
             return res.redirect('/user/profile/'+user.id);
           }
           else{
