@@ -134,10 +134,13 @@ module.exports = {
     }
 
     User.findOne(criteria).exec(function(error, user) {
-      if(error){
-        res.view('user/error',{message: 'Ошибка: ' + error.message});
-      }
-      else{
+      if (error){
+        res.view('user/error', {message: 'Ошибка: ' + error.message});
+      } else{
+        if (!user) {
+          return res.notFound();
+        }
+
         res.view({
           user: _.omit(user, 'password')
         });
