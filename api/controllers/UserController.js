@@ -122,8 +122,18 @@ module.exports = {
     }
   },
 
-  profile: function(req, res){
-    User.findOne(req.param('id')).exec(function(error, user){
+  profile: function(req, res) {
+    var criteria = {};
+
+    if (('id' in req.params) && (req.param('id') !== undefined)) {
+      criteria = {id: req.param('id')};
+    } else if ('username' in req.params) {
+      criteria = {username: req.param('username')};
+    } else {
+      return res.redirect('/user/profile/' + req.session.user.id);
+    }
+
+    User.findOne(criteria).exec(function(error, user) {
       if(error){
         res.view('user/error',{message: 'Ошибка: ' + error.message});
       }
