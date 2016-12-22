@@ -1,0 +1,17 @@
+extends profile
+
+block container
+  .col-sm-3.text-center
+    img#avatar(src="/user/avatar/"+user.id, alt=name)
+  .col-sm-5
+    .panel.panel-default
+      .panel-heading
+        h1.panel-title Друзья
+      .panel-body
+        h4 Мои друзья
+        #friends
+  .col-sm-4
+    .panel.panel-default
+      .panel-heading
+        h1.panel-title Карта
+      #map.panel-body(style="height: 300px")

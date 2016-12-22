@@ -141,9 +141,26 @@ module.exports = {
           return res.notFound();
         }
 
-        res.view({
-          user: _.omit(user, 'password')
-        });
+        if (user.id == req.session.user.id) {
+          res.view('user/profile_owner', {
+            user: _.omit(user, 'password')
+          });
+        } else {
+          Friend.count({id_user: user.id, id_friend: req.session.user.id})
+            .exec(function(error, count) {
+              if (error){
+                res.view('user/error', {message: 'Ошибка: ' + error.message});
+              } else {
+                if (count) {
+                  res.view('user/profile_friend', {
+                    user: _.omit(user, 'password')
+                  });
+                } else {
+                  res.view('user/error', {message: 'Вы можете просматривать только профили пользователей, которые добавили Вас в друзья'});
+                }
+              }
+          });
+        }
       }
     });
   },
@@ -152,7 +169,8 @@ module.exports = {
     if(req.xhr){
       switch(req.method){
         case 'GET':
-          User.findOne(parseInt(req.param('id', 0))).populate('friends').exec(function(error, user){
+          var user_id = parseInt(req.param('id', 0));
+          User.findOne(user_id).populate('friends').exec(function(error, user){
             if(error)
               return res.negotiate(error);
             else {
@@ -161,7 +179,7 @@ module.exports = {
                 if(error)
                   return res.negotiate(error);
                 else{
-                  return res.view({friends: friends});
+                  return res.view({owner: user_id == req.session.user.id, friends: friends});
                 }
               });
             }

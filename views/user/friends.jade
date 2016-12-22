@@ -4,9 +4,10 @@ if friends.length
       -var name = [friend.firstname, friend.lastname].join(' ')
       tr
         td
-          img(src="/user/avatar/thumbnail/" + friend.id, width="60", height="60" alt=name)
+          img(src="/user/avatar/thumbnail/" + friend.id, width="60", height="60" alt=owner)
         td.vmiddle= name
         td.vmiddle
-          a.delete-friend(href="#", data-id=friend.id) Удалить
+          if owner
+            a.delete-friend(href="#", data-id=friend.id) Удалить
 else
   span У Вас пока нет друзей
