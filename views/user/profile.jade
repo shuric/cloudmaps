@@ -36,6 +36,26 @@ block scripts
       });
     };
     
+    function set_status(status) {
+      var avatar = [];
+      
+      if (my.id == status.id) {
+        avatar = $('#avatar-wrapper');
+      } else {
+        avatar = $('div[data-status_user_id="' + status.id + '"]');
+      }
+
+      if (avatar.length) {
+        if (status.online) {
+          if (!avatar.hasClass('online'))
+            avatar.addClass('online');
+        } else {
+          if (avatar.hasClass('online'))
+            avatar.removeClass('online');
+        }
+      }
+    }
+    
     $(function(){
       var map = L.map('map').setView([51.505, -0.09], 13);
       L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
@@ -58,4 +78,22 @@ block scripts
       io.socket.get('/user/subscribe', function(resData, jwres){
         return;
       });
+      
+      io.socket.on('user_status', function(status) {
+        if (Utils.isArray(status)) {
+          for (var i in status) {
+            set_status(status[i]);
+          }
+        } else {
+          set_status(status);
+        }
+        console.log(status);
+      });
+      
+      var pingInterval = setInterval(function() {
+        $.ajax({
+          url: '/user/ping',
+          method: 'GET'
+        });
+      }, 60000);
     });

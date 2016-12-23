@@ -97,12 +97,21 @@ module.exports = {
     if(req.method == 'POST'){
       User.findOne({username: req.param('username')}).exec(function(error, user){
         if(error){
-          res.view('user/error',{message: 'При проверке логина и пароля произошла ошибка: ' + error.message});
+          res.view('user/error', {message: 'При проверке логина и пароля произошла ошибка: ' + error.message});
         }
         else{
           if (user && (user.password == crypto.createHash('sha256').update(req.param('password')).digest('hex'))) {
+            user.online = true;
+            user.date_last_online = new Date();
+            user.save();
+
             req.session.user = user;
             req.session.authenticated = true;
+
+            sails.sockets.blast('user_status', {
+              id: req.session.user.id,
+              online: true
+            });
 
             return res.redirect('/user/profile/'+user.id);
           }
@@ -314,7 +323,26 @@ module.exports = {
   },
 
   logout: function(req, res){
+    if (req.session.user) {
+      var user_id = req.session.user.id;
+
+      User.update(user_id, {
+        online: false,
+        date_last_online: new Date()
+      }).exec(function(err, updated) {
+        if (err) {
+          console.log(err);
+        } else {
+          sails.sockets.blast('user_status', {
+            id: user_id,
+            online: false
+          });
+        }
+      });
+    }
+
     delete req.session.user;
+
     return res.redirect('/');
   },
 
@@ -359,6 +387,7 @@ module.exports = {
   request: function(req, res){
     if(req.xhr){
       var id_requested = req.param('id_requested');
+
       Request.count({
         id_requesting: req.session.user.id,
         id_requested: id_requested
@@ -381,6 +410,7 @@ module.exports = {
                 Request.findOne(request.id).populateAll().exec(function(error, request){
                   request.id_requesting = _.omit(request.id_requesting, 'password');
                   Request.publishCreate(request, req);
+
                   return res.send({
                     success: true,
                     message: "Заявка успешно отправлена"
@@ -399,6 +429,16 @@ module.exports = {
       });
     }
     else{
+      return res.badRequest();
+    }
+  },
+
+  ping: function(req, res) {
+    if (req.xhr) {
+      return res.send({
+        ping: true
+      });
+    } else {
       return res.badRequest();
     }
   }

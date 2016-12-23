@@ -2,7 +2,8 @@ extends profile
 
 block container
   .col-sm-3.text-center
-    img#avatar(src="/user/avatar/"+user.id, alt=name)
+    div#avatar-wrapper(class=user.online ? "online" : "")
+      img.online#avatar(src="/user/avatar/"+user.id, alt=name)
     div.text-center
       a#select-avatar(href="#") Сменить аватар
   .col-sm-5

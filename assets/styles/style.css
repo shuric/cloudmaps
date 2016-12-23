@@ -1,3 +1,20 @@
 .vmiddle{
   vertical-align: middle !important;
 }
+
+.online {
+    position: relative;
+    display: inline-block;
+}
+
+.online:after {
+    bottom: -6px;
+    right: -6px;
+    border: 1px solid #fff;
+    height: 12px;
+    width: 12px;
+    content: '';
+    position: absolute;
+    background-color: #8ac176;
+    border-radius: 50%;
+}

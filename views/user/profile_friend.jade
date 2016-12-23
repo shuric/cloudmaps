@@ -2,7 +2,8 @@ extends profile
 
 block container
   .col-sm-3.text-center
-    img#avatar(src="/user/avatar/"+user.id, alt=name)
+    div#avatar-wrapper(class=user.online ? "online" : "")
+      img#avatar(src="/user/avatar/"+user.id, alt=name)
   .col-sm-5
     .panel.panel-default
       .panel-heading

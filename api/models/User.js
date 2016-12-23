@@ -17,10 +17,11 @@ module.exports = {
     email: { type: 'string' },
     active: { type: 'boolean' },
     password: { type: 'string' },
+    online: { type: 'boolean' },
+    date_last_online: {type: 'datetime'},
     friends: {
       collection: 'friend',
       via: 'id_user'
     }
   }
 };
-

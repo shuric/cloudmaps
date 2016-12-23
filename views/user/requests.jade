@@ -4,7 +4,8 @@ if requests.length
       -var name = [request.firstname, request.lastname].join(' ')
       tr
         td
-          img(src="/user/avatar/thumbnail/" + request.id, width="60", height="60" alt=name)
+          div(data-status_user_id=request.id, class=request.online ? "online" : "")
+            img(src="/user/avatar/thumbnail/" + request.id, width="60", height="60" alt=name)
         td.vmiddle= name
         td.vmiddle
           a.accept(href="#", data-id=request.id) Принять
