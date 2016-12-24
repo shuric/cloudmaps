@@ -348,7 +348,6 @@ module.exports = {
 
   list: function(req, res){
     if(req.xhr){
-      User.message(2, {test: 3});
       Friend.find({id_user: req.session.user.id}).exec(function(error, friends){
         if(error)
           return res.negotiate(error);
