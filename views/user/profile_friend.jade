@@ -13,6 +13,12 @@ block container
         #friends
   .col-sm-4
     .panel.panel-default
-      .panel-heading
+      .panel-heading#location-status(class=user.located ? "" : "unlocated")
         h1.panel-title Карта
       #map.panel-body(style="height: 300px")
+      
+block append scripts
+  script(type="text/javascript").
+    $(function(){
+      set_location(my.latitude_last, my.longitude_last, my.located, my.online);
+    });

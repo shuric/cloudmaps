@@ -19,7 +19,7 @@ block container
         button.btn.btn-default(type="button", data-toggle="modal", data-target="#newFriends") Найти новых друзей
   .col-sm-4
     .panel.panel-default
-      .panel-heading
+      .panel-heading#location-status(class=user.located ? "" : "unlocated")
         h1.panel-title Карта
       #map.panel-body(style="height: 300px")
 
@@ -70,7 +70,19 @@ block append scripts
       });
     };
     
-    $(function(){
+    $(function(){      
+      map.on('locationfound', function(e) {
+        map.setView([e.latitude, e.longitude], 13);
+        L.marker([e.latitude, e.longitude], {icon: my.located ? onlineMarkerIcon : noneMarkerIcon}).addTo(map);
+        send_location(e.latitude, e.longitude, true);
+      });
+
+      map.on('locationerror', function(e){
+        send_location(false, false, false);
+      });
+
+      map.locate();
+      
       get_requests();
 
       $('#newFriends').on('show.bs.modal', function(e){

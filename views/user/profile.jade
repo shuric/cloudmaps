@@ -38,9 +38,10 @@ block scripts
     
     function set_status(status) {
       var avatar = [];
-      
+
       if (my.id == status.id) {
         avatar = $('#avatar-wrapper');
+        set_location(my.latitude_last, my.longitude_last, my.located, status.online);
       } else {
         avatar = $('div[data-status_user_id="' + status.id + '"]');
       }
@@ -56,22 +57,67 @@ block scripts
       }
     }
     
-    $(function(){
-      var map = L.map('map').setView([51.505, -0.09], 13);
+    function send_location(latitude, longitude, located) {
+      latitude = parseFloat(latitude) || -1;
+      longitude = parseFloat(longitude) || -1;
+      
+      $.ajax({
+        url: '/user/location',
+        method: 'PUT',
+        data: {
+          latitude: latitude,
+          longitude: longitude,
+          located: located ? 1 : 0
+        }
+      });
+    }
+    
+    var LeafIcon = L.Icon.extend({
+      options: {
+        iconSize: [41, 41]
+      }
+    });
+    
+    var onlineMarkerIcon = new LeafIcon({iconUrl: '/images/marker_online.png'});
+    var offlineMarkerIcon = new LeafIcon({iconUrl: '/images/marker_offline.png'});
+    var noneMarkerIcon = new LeafIcon({iconUrl: '/images/marker_none.png'});
+    var map = L.map('map').setView([51.505, -0.09], 13); 
+    var markerLocation;
+    
+    function set_location(latitude, longitude, located, online) {  
+      if (latitude && longitude) {
+        map.setView([latitude, longitude], 13);
+        
+        if (markerLocation)
+          map.removeLayer(markerLocation);
+          
+        markerLocation = new L.Marker([latitude, longitude], {
+          icon: located ? (online ? onlineMarkerIcon : offlineMarkerIcon) : noneMarkerIcon
+        });
+        
+        map.addLayer(markerLocation);
+      } else {
+        if (markerLocation)
+          markerLocation.setIcon(located ? (online ? onlineMarkerIcon : offlineMarkerIcon) : noneMarkerIcon);
+      }
+      
+      var location_status = $('#location-status');
+      
+      if (location_status.length) {
+        if (located) {
+            if (location_status.hasClass('unlocated'))
+              location_status.removeClass('unlocated');
+        } else {
+          if (!location_status.hasClass('unlocated'))
+            location_status.addClass('unlocated');
+        }
+      }
+    }
+    
+    $(function(){     
       L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
-
-      map.on('locationfound', function(e){
-        map.setView([e.latitude, e.longitude],13);
-        L.marker([e.latitude, e.longitude]).addTo(map);
-      });
-
-      map.on('locationerror', function(e){
-        console.log(e.message);
-      });
-
-      map.locate();
 
       get_friends();
 
@@ -87,7 +133,6 @@ block scripts
         } else {
           set_status(status);
         }
-        console.log(status);
       });
       
       var pingInterval = setInterval(function() {
@@ -96,4 +141,22 @@ block scripts
           method: 'GET'
         });
       }, 60000);
+      
+      io.socket.on('user', function (event) {
+        console.log(event);
+        switch (event.verb) {
+          case 'updated':
+            var request = event.data;
+            if (request.location) {
+              var location = request.location;
+              if (my.id == event.id) {
+                set_location(location.latitude_last, location.longitude_last, location.located, my.online);
+              }
+            }
+            
+            break;
+          default:
+            console.warn('Unrecognized socket event (`%s`) from server:', event.verb, event);
+        }
+      });
     });

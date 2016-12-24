@@ -50,6 +50,7 @@ module.exports.policies = {
 	// }
   UserController: {
     profile: ['sessionAuth', 'isActivated', 'setOnline'],
-    ping: ['sessionAuth', 'setOnline']
+    ping: ['sessionAuth', 'setOnline'],
+    location: ['sessionAuth', 'setOnline']
   }
 };

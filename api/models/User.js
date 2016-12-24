@@ -19,6 +19,10 @@ module.exports = {
     password: { type: 'string' },
     online: { type: 'boolean' },
     date_last_online: {type: 'datetime'},
+    latitude_last: {type: 'float'},
+    longitude_last: {type: 'float'},
+    date_last_locate: {type: 'datetime'},
+    located: { type: 'boolean' },
     friends: {
       collection: 'friend',
       via: 'id_user'

@@ -11,9 +11,9 @@ module.exports = function setOnline(req, res, next) {
     User.update(req.session.user.id, {
       online: true,
       date_last_online: current_date
-    }).exec(function(err, updated) {
-      if (err) {
-        console.log(err);
+    }).exec(function(error, updated) {
+      if (error) {
+        console.log(error);
       } else {
         if (!updated[0].online) {
           req.session.user.online = true;

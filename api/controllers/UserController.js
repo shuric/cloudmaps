@@ -179,7 +179,7 @@ module.exports = {
       switch(req.method){
         case 'GET':
           var user_id = parseInt(req.param('id', 0));
-          User.findOne(user_id).populate('friends').exec(function(error, user){
+          User.findOne(user_id).populate('friends').exec(function(error, user) {
             if(error)
               return res.negotiate(error);
             else {
@@ -329,9 +329,9 @@ module.exports = {
       User.update(user_id, {
         online: false,
         date_last_online: new Date()
-      }).exec(function(err, updated) {
-        if (err) {
-          console.log(err);
+      }).exec(function(error, updated) {
+        if (error) {
+          return res.negotiate(error);
         } else {
           sails.sockets.blast('user_status', {
             id: user_id,
@@ -348,6 +348,7 @@ module.exports = {
 
   list: function(req, res){
     if(req.xhr){
+      User.message(2, {test: 3});
       Friend.find({id_user: req.session.user.id}).exec(function(error, friends){
         if(error)
           return res.negotiate(error);
@@ -377,7 +378,21 @@ module.exports = {
   },
 
   subscribe: function(req, res){
-    if(req.isSocket && req.session.user){
+    if (req.isSocket && req.session.user) {
+      User.findOne(req.session.user.id).populate('friends').exec(function(error, user) {
+        if (error)
+          return res.serverError(error);
+        else {
+          // Для обмена личными сообщениями
+          User.subscribe(req, user, 'message');
+
+          // Для получения обновлений друзей
+          if (user.friends.length) {
+            User.subscribe(req, _.pluck(user.friends, 'id'), 'update');
+          }
+        }
+      });
+
       Request.watch(req);
       Friend.watch(req);
     }
@@ -441,5 +456,81 @@ module.exports = {
     } else {
       return res.badRequest();
     }
-  }
+  },
+
+  location: function(req, res) {
+    if (req.xhr) {
+      var latitude = parseFloat(req.param('latitude'));
+      var longitude = parseFloat(req.param('longitude'));
+      var located = parseInt(req.param('located')) ? true : false;
+
+      if (located) {
+        Location.create({
+          id_user: req.session.user.id,
+          latitude: latitude,
+          longitude: longitude
+        }).exec(function(error, data){
+          if (error)
+            return res.negotiate(error);
+          else{
+            var location = {
+              latitude_last: latitude,
+              longitude_last: longitude,
+              date_last_locate: new Date(),
+              located: true
+            };
+
+            User.update(req.session.user.id, location).exec(function(error, updated) {
+              if (error) {
+                return res.negotiate(error);
+              } else {
+                User.publishUpdate(updated[0].id, {
+                  location: location
+                }, req, {
+                  previous: {
+                    location: {
+                      latitude_last: updated[0].latitude_last,
+                      longitude_last: updated[0].longitude_last,
+                      date_last_locate: updated[0].date_last_locate,
+                      located: updated[0].located
+                    }
+                  }
+                });
+              }
+            });
+          }
+        });
+      } else {
+        User.update(req.session.user.id, {
+          located: false
+        }).exec(function(error, updated) {
+          if (error) {
+            return res.negotiate(error);
+          } else {
+            User.publishUpdate(updated[0].id, {
+              location: {
+                located: false
+              }
+            }, req, {
+              previous: {
+                location: {
+                  latitude_last: updated[0].latitude_last,
+                  longitude_last: updated[0].longitude_last,
+                  date_last_locate: updated[0].date_last_locate,
+                  located: updated[0].located
+                }
+              }
+            });
+          }
+        });
+      }
+
+      return res.send({
+        location: true
+      });
+
+    } else {
+      return res.badRequest();
+    }
+  },
 };

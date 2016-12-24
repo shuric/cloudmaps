@@ -18,3 +18,17 @@
     background-color: #8ac176;
     border-radius: 50%;
 }
+
+#location-status.unlocated {
+  position: relative;
+}
+
+#location-status.unlocated:after {
+  right: 0;
+  bottom: 3px;
+  height: 30px;
+  width: 30px;
+  content: '';
+  position: absolute;
+  background-image: url('/images/located_none.png');
+}
