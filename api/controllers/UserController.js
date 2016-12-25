@@ -162,7 +162,7 @@ module.exports = {
               } else {
                 if (count) {
                   res.view('user/profile_friend', {
-                    user: _.omit(user, 'password')
+                    user: _.omit(user, ['password', 'unread_messages_count'])
                   });
                 } else {
                   res.view('user/error', {message: 'Вы можете просматривать только профили пользователей, которые добавили Вас в друзья'});
@@ -193,6 +193,7 @@ module.exports = {
               });
             }
           });
+
           break;
         case 'DELETE':
           var id = parseInt(req.param('id'));

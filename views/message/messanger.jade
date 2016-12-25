@@ -1,0 +1,147 @@
+extends ../page
+
+block container
+  .col-sm-4
+    #friends
+  .col-sm-8
+    #messages 
+      div.text-center Выберите диалог
+    form.row.hide#send_message_form
+      .col-sm-10
+        textarea#message_text
+      .col-sm-2
+        button.btn.btn-default(type="submit") Отправить
+
+block append scripts
+  script(src="/js/message.js")
+  script(type="text/javascript").       
+    $(function(){   
+      var friends = $('#friends');
+      var messages = $('#messages');
+      var send_message_form = $('#send_message_form');
+      var message_text = $('#message_text');
+      var send_message = $('#send_message');
+      var friend_id = !{friend_id};
+      
+      function parse_response(response, socket) {
+        for (var type in response) {
+          var data = response[type];
+          switch (type) {
+            case 'friend':
+              set_friend_count(data.id_friend, data.unread_messages_count);
+              break;
+            case 'message':
+              add_message(data);
+              add_last_message(socket ? data.id_user : friend_id, data);
+              break;
+          }
+        }  
+      }
+      
+      function set_friend(id) {
+        if (id) {
+          var contact = $('tr[data-id=' + id + ']', friends);
+          
+          if (contact.length) {
+            $('tr[data-id=' + friend_id + ']', friends).removeClass('active');
+            contact.addClass('active');
+
+            Message.messages({friend_id: id}, function(response){
+              messages.html(response);
+              
+              if (send_message_form.hasClass('hide'))
+                send_message_form.removeClass('hide');
+              
+              var count = parseInt($('.count', contact).text() || 0);
+
+              if (count) {
+                Message.unread({friend_id: id}, function(response){
+                  if (response.success) {
+                    parse_response(response.data);
+                  } else {
+                    console.log(response);
+                  }
+                });
+              }
+              
+              if (friend_id != id) {                  
+                friend_id = id;
+              }
+            });
+          }
+        }
+      }
+      
+      function add_message(message) {
+        if ((friend_id == message.id_user) || (friend_id == message.id_friend)) {
+          var message_text = '<tr data-id="' + message.id + '" class="'+ (friend_id != message.id_user ? "own" : "") + '">' + 
+            '<td>' + 
+              '<div class="date">' + Utils.escapeHtml(message.date_create) + '</div>' + 
+              '<div class="message">' + Utils.escapeHtml(message.message) + '</div>' + 
+            '</td>' + 
+          '</tr>';
+
+          $('table', messages).append(message_text);
+        }
+      }
+      
+      function add_last_message(id, message) {
+        if (id) {
+          var contact = $('tr[data-id=' + id + ']', friends); 
+          
+          if (contact.length) {
+            $('.message', contact).text((id != message.id_user ? "Вы: " : "") + message.message);
+            contact.clone().prependTo($('table', friends));
+            contact.remove();
+          }
+        }
+      }
+      
+      function set_friend_count(id, count) {
+        if (id) {
+          var contact_count = $('tr[data-id=' + id + '] .count', friends);
+          
+          if (contact_count.length) {
+            contact_count.text(count? count : '');
+          }
+        }
+      }
+      
+      Message.friends(function(response){
+        friends.html(response);
+        set_friend(friend_id);
+      });
+      
+      friends.on('click', 'tr', function(){        
+        set_friend(parseInt($(this).attr('data-id') || 0));
+      });
+      
+      send_message_form.on('submit', function(){
+        var message = message_text.val();
+        
+        if (friend_id && message.length) {
+          Message.send({friend_id: friend_id, message: message}, function(response){
+            if (response.success) {
+              parse_response(response.data);
+              message_text.val('');
+            } else {
+              console.log(response);
+            }
+          });
+        }
+        
+        return false;
+      });
+            
+      io.socket.on('user', function (event) {
+        switch (event.verb) {
+          case 'updated':          
+            break;
+          case 'messaged':
+            parse_response(event.data, true);
+            break;
+          default:
+            console.warn('Unrecognized socket event (`%s`) from server:', event.verb, event);
+        }
+      });
+    });

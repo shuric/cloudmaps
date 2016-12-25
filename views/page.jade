@@ -1,0 +1,62 @@
+extends layout
+
+block body
+  - var name = [user.firstname, user.lastname].join(' ')
+  nav.navbar.navbar-default
+    .container-fluid
+      .navbar-header
+        a(href="/user/profile/" + user.username).navbar-brand= name
+      ul.nav.navbar-nav.navbar-right
+        li
+          a(href="/logout") Выход
+  block container
+  div#notifications
+    table.table.table-striped
+  
+block append scripts
+  script(type="text/javascript").
+    var my = JSON.parse('!{JSON.stringify(user)}');
+    
+    function set_status(status) {
+      var avatar = [];
+
+      if (my.id == status.id) {
+        avatar = $('#avatar-wrapper');
+        set_location(my.latitude_last, my.longitude_last, my.located, status.online);
+      } else {
+        avatar = $('div[data-status_user_id="' + status.id + '"]');
+      }
+
+      if (avatar.length) {
+        if (status.online) {
+          if (!avatar.hasClass('online'))
+            avatar.addClass('online');
+        } else {
+          if (avatar.hasClass('online'))
+            avatar.removeClass('online');
+        }
+      }
+    }
+    
+    $(function(){     
+      io.socket.get('/user/subscribe', function(resData, jwres){
+        return;
+      });
+      
+      io.socket.on('user_status', function(status) {
+        if (Utils.isArray(status)) {
+          for (var i in status) {
+            set_status(status[i]);
+          }
+        } else {
+          set_status(status);
+        }
+      });
+      
+      var pingInterval = setInterval(function() {
+        $.ajax({
+          url: '/user/ping',
+          method: 'GET'
+        });
+      }, 60000);
+    });

@@ -53,4 +53,7 @@ module.exports.routes = {
   '/user/profile/:username': {controller: 'UserController', action: 'profile'},
   'post r|^/user/avatar/(thumbnail)$|image': {controller: 'UserController', action: 'avatar'},
   'get r|^/user/avatar/(thumbnail)/(\\d+)$|image,id': {controller: 'UserController', action: 'avatar'},
+  '/messanger': {controller: 'MessageController', action: 'messanger'},
+  'r|^/messanger/(\\d+)$|id': {controller: 'MessageController', action: 'messanger'},
+  '/messanger/:username': {controller: 'MessageController', action: 'messanger'}
 };

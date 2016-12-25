@@ -1,0 +1,21 @@
+if contacts.length
+  table.table.table-striped
+    each contact in contacts
+      -var friend = contact.id_friend
+      -var name = [friend.firstname, friend.lastname].join(' ')
+      -var message = (contact.id_last_message && contact.id_last_message.id) ? contact.id_last_message : false;
+      tr(data-id=friend.id)
+        td
+          div(data-status_user_id=friend.id, class=friend.online ? "online" : "")
+            img(src="/user/avatar/thumbnail/" + friend.id, width="60", height="60" alt=name)
+        td.vmiddle
+          if message
+            div= name
+            div.message= ((friend.id != message.id_user) ? "Вы: " : "") + message.message
+          else
+            = name
+          
+        td.vmiddle
+          span.count= contact.unread_messages_count ? contact.unread_messages_count : ""
+else
+  span У Вас пока нет друзей

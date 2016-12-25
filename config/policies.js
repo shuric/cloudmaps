@@ -52,5 +52,9 @@ module.exports.policies = {
     profile: ['sessionAuth', 'isActivated', 'setOnline'],
     ping: ['sessionAuth', 'setOnline'],
     location: ['sessionAuth', 'setOnline']
+  },
+
+  MessageController: {
+    '*': ['sessionAuth', 'isActivated', 'setOnline']
   }
 };

@@ -4,6 +4,8 @@ block container
   .col-sm-3.text-center
     div#avatar-wrapper(class=user.online ? "online" : "")
       img#avatar(src="/user/avatar/"+user.id, alt=name)
+    div.text-center
+      a#messages(href="/messanger/" + user.username) Написать сообщение
   .col-sm-5
     .panel.panel-default
       .panel-heading

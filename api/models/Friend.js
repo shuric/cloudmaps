@@ -15,7 +15,14 @@ module.exports = {
       type: 'integer',
       model: 'user'
     },
-    id_friend: { type: 'integer' }
+    id_friend: {
+      type: 'integer',
+      model: 'user'
+    },
+    id_last_message: {
+      type: 'integer',
+      model: 'message'
+    },
+    unread_messages_count: {type: 'integer'}
   }
 };
-

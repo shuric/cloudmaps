@@ -23,6 +23,7 @@ module.exports = {
     longitude_last: {type: 'float'},
     date_last_locate: {type: 'datetime'},
     located: { type: 'boolean' },
+    unread_messages_count: {type: 'integer'},
     friends: {
       collection: 'friend',
       via: 'id_user'

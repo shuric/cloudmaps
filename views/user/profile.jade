@@ -1,24 +1,11 @@
-extends ../layout
-
-block body
-  - var name = [user.firstname, user.lastname].join(' ')
-  nav.navbar.navbar-default
-    .container-fluid
-      .navbar-header
-        span.navbar-brand= name
-      ul.nav.navbar-nav.navbar-right
-        li
-          a(href="/logout") Выход
-  block container
+extends ../page
   
 block styles
   link(rel="stylesheet", href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css")
 
-block scripts
+block append scripts
   script(src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js")
   script(type="text/javascript").
-    var my = JSON.parse('!{JSON.stringify(user)}');
-    
     function get_friends(){
       $.ajax({
         url: '/user/friends/'+my.id,
@@ -35,27 +22,6 @@ block scripts
         });
       });
     };
-    
-    function set_status(status) {
-      var avatar = [];
-
-      if (my.id == status.id) {
-        avatar = $('#avatar-wrapper');
-        set_location(my.latitude_last, my.longitude_last, my.located, status.online);
-      } else {
-        avatar = $('div[data-status_user_id="' + status.id + '"]');
-      }
-
-      if (avatar.length) {
-        if (status.online) {
-          if (!avatar.hasClass('online'))
-            avatar.addClass('online');
-        } else {
-          if (avatar.hasClass('online'))
-            avatar.removeClass('online');
-        }
-      }
-    }
     
     function send_location(latitude, longitude, located) {
       latitude = parseFloat(latitude) || -1;
@@ -114,33 +80,74 @@ block scripts
       }
     }
     
-    $(function(){     
+    $(function(){  
+      var messages_count = $('#messages .count');  
+      var notifications = $('#notifications table');
+      var notification_timer = null;
+      
+      function set_notification_timeout() {
+        if (!notification_timer) {
+          notification_timer = setTimeout(function(){
+            notification_timer = null;	
+
+            var list = $('tr', notifications);
+            
+            if (list.length) {	
+              $(list[0]).remove();
+              set_notification_timeout();
+            }
+          }, 10000);
+        }
+      }
+      
+      notifications.on('click', 'tr', function(){
+        $(this).remove();
+      });
+      
+      function add_notification(notification) {
+        var notification_text = '<tr>' +
+            '<td>' + 
+              '<a href="' + notification.url + '">' + 
+                '<img src="' + notification.avatar + '" width="60" height="60" alt="Новое сообщение">' + 
+              '</a>' + 
+            '</td>' +
+            '<td class="vmiddle">' + 
+              '<div>Новое сообщение</div>' + 
+              '<div class="message">' + Utils.escapeHtml(notification.message) + '</div>' + 
+            '</td>' + 
+          '</tr>';
+
+          notifications.append(notification_text);
+          set_notification_timeout();
+      }   
+      
+      function parse_response(response, socket) {
+        for (var type in response) {
+          var data = response[type];
+          switch (type) {
+              case 'unread_messages_count':
+                set_messages_count(data);
+                break;
+              case 'message':
+                add_notification({
+                  url: '/messanger/' + data.id_user,
+                  avatar: '/user/avatar/thumbnail/' + data.id_user,
+                  message: data.message
+                });
+                break;
+          }
+        }  
+      }
+      
+      function set_messages_count(count) {
+        messages_count.text(count);  
+      }
+          
       L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
 
       get_friends();
-
-      io.socket.get('/user/subscribe', function(resData, jwres){
-        return;
-      });
-      
-      io.socket.on('user_status', function(status) {
-        if (Utils.isArray(status)) {
-          for (var i in status) {
-            set_status(status[i]);
-          }
-        } else {
-          set_status(status);
-        }
-      });
-      
-      var pingInterval = setInterval(function() {
-        $.ajax({
-          url: '/user/ping',
-          method: 'GET'
-        });
-      }, 60000);
       
       io.socket.on('user', function (event) {
         switch (event.verb) {
@@ -153,6 +160,9 @@ block scripts
               }
             }
             
+            break;
+          case 'messaged':
+            parse_response(event.data, true);
             break;
           default:
             console.warn('Unrecognized socket event (`%s`) from server:', event.verb, event);

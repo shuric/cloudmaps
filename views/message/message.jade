@@ -1,0 +1,4 @@
+tr(data-id=message.id, class=friend.id==message.id_user ? "" : "own")
+  td
+    div.date= sails.moment(message.date_create).format('YYYY-MM-DD HH:mm:ss')
+    div.message= message.message

@@ -5,7 +5,8 @@ if friends.length
       tr
         td
           div(data-status_user_id=friend.id, class=friend.online ? "online" : "")
-            img(src="/user/avatar/thumbnail/" + friend.id, width="60", height="60" alt=owner)
+            a(href="/user/profile/" + friend.username)
+              img(src="/user/avatar/thumbnail/" + friend.id, width="60", height="60" alt=name)
         td.vmiddle= name
         td.vmiddle
           if owner

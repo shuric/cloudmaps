@@ -6,6 +6,9 @@ block container
       img.online#avatar(src="/user/avatar/"+user.id, alt=name)
     div.text-center
       a#select-avatar(href="#") Сменить аватар
+    div.text-center
+      a#messages(href="/messanger") Сообщения 
+        span.count= user.unread_messages_count ? user.unread_messages_count : ""
   .col-sm-5
     .panel.panel-default
       .panel-heading
